@@ -6,6 +6,9 @@ import { Redirect, Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import ComingSoon from "./pages/ComingSoon";
+
+declare const __PRELAUNCH__: boolean;
 import AvisoLegal from "./pages/AvisoLegal";
 
 // Área privada (pacientes y terapeuta), cargada solo cuando se visita.
@@ -54,7 +57,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          {__PRELAUNCH__ ? <ComingSoon /> : <Router />}
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
