@@ -22,7 +22,7 @@ const BLOCKS: Block[] = [
   { day: 0, top: 5, height: 1, label: "Hueco libre", kind: "hueco" },
   { day: 1, top: 1, height: 1, label: "L. P.", kind: "cita" },
   { day: 1, top: 3, height: 1, label: "Hueco libre", kind: "hueco" },
-  { day: 1, top: 5, height: 2, label: "Supervisión", kind: "evento" },
+  { day: 1, top: 5, height: 2, label: "Reunión", kind: "evento" },
   { day: 2, top: 0, height: 1, label: "C. V.", kind: "cita" },
   { day: 2, top: 1, height: 1, label: "J. M.", kind: "cita" },
   { day: 2, top: 4, height: 1, label: "Hueco libre", kind: "hueco" },
