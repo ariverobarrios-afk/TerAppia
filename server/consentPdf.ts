@@ -184,10 +184,10 @@ class Writer {
 
 export async function buildConsentPdf(input: ConsentPdfInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  doc.setTitle("Siloz Psicología — Documentos de consentimiento");
+  doc.setTitle("Terappia — Documentos de consentimiento");
   doc.setAuthor(input.responsable.nombre);
   doc.setSubject(`Consentimiento ${input.consentId}`);
-  doc.setProducer("Siloz Psicología");
+  doc.setProducer("Terappia");
   doc.setCreator("terappia.es");
   doc.setCreationDate(input.signedAt);
   doc.setModificationDate(input.signedAt);
@@ -210,7 +210,7 @@ export async function buildConsentPdf(input: ConsentPdfInput): Promise<Uint8Arra
       // Sin logo si no se puede leer: el documento sigue siendo válido.
     }
   }
-  w.text("Siloz Psicología — Documentos de consentimiento", 20, { bold: true });
+  w.text("Terappia — Documentos de consentimiento", 20, { bold: true });
   w.gap(4);
   w.text(`Firmado electrónicamente el ${madridDateTime(input.signedAt)}`, 10.5, { color: MUTED });
   w.gap(10);

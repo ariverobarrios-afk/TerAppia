@@ -5,7 +5,7 @@ import calendar from "../api/calendar";
 
 test("iCalendar: cabecera, eventos con hora y de día completo, escapado", () => {
   const ics = buildIcs({
-    name: "Siloz Psicología",
+    name: "Terappia",
     now: new Date("2026-11-09T10:00:00Z"),
     events: [
       { uid: "a1@terappia.es", start: new Date("2026-08-27T16:00:00Z"), end: new Date("2026-08-27T16:50:00Z"),
@@ -36,10 +36,10 @@ test("iniciales", () => {
   assert.equal(initials(""), "Paciente");
 });
 
-test("días de Psicolink: miércoles y viernes salvo cambios", () => {
+test("días en otro centro: ninguno por defecto, solo los marcados", () => {
   // Del lunes 24 al domingo 30 de agosto de 2026.
-  assert.deepEqual(psicolinkDays("2026-08-24", "2026-08-30", new Map()), ["2026-08-26", "2026-08-28"]);
-  assert.deepEqual(psicolinkDays("2026-08-24", "2026-08-30", new Map([["2026-08-26", false], ["2026-08-24", true]])), ["2026-08-24", "2026-08-28"]);
+  assert.deepEqual(psicolinkDays("2026-08-24", "2026-08-30", new Map()), []);
+  assert.deepEqual(psicolinkDays("2026-08-24", "2026-08-30", new Map([["2026-08-26", false], ["2026-08-24", true]])), ["2026-08-24"]);
 });
 
 test("endpoint del calendario: sin token o sin configurar", async () => {
@@ -63,33 +63,33 @@ test("endpoint del calendario: lo que ve la psicóloga y lo que ve el paciente",
       { id: "a1", patient_id: "P", starts_at: soon.toISOString(), duration_minutes: 50, session_type: "individual", modality: "online" },
     ],
     agenda_events: [{ id: "e1", title: "Reunión de equipo", starts_at: soon.toISOString(), duration_minutes: 60 }],
-    agenda_days: [],
+    agenda_days: [{ day: soon.toISOString().slice(0, 10), psicolink: true }],
   };
-  let me = { id: "U", role: "admin", active: true, full_name: "la psicóloga", psychologist_id: null as string | null };
+  let me = { id: "U", role: "admin", active: true, full_name: "Marta", psychologist_id: null as string | null };
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
     const table = url.pathname.split("/").pop()!;
     let body: unknown = tables[table] ?? [];
     if (table === "profiles") {
       const id = url.searchParams.get("id") ?? "";
-      body = id.startsWith("in.") ? [{ id: "P", full_name: "Alberto Rivero Barrios" }] : id === "eq.U" ? me : { full_name: "Psicóloga Demo" };
+      body = id.startsWith("in.") ? [{ id: "P", full_name: "Alberto Rivero Barrios" }] : id === "eq.U" ? me : { full_name: "Marta López" };
     }
     return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
   }) as typeof fetch;
   try {
     const url = "https://terappia.es/api/calendar?t=" + "a".repeat(64);
     const admin = await (await calendar(new Request(url))).text();
-    assert.match(admin, /X-WR-CALNAME:Siloz Psicología – Agenda/);
+    assert.match(admin, /X-WR-CALNAME:Terappia – Agenda/);
     assert.match(admin, /SUMMARY:Sesión – A\.R\.B\./);
     assert.doesNotMatch(admin, /Alberto|Rivero|Barrios/);
     assert.match(admin, /SUMMARY:Reunión de equipo/);
-    assert.match(admin, /SUMMARY:Psicolink/);
-    assert.match(admin.replace(/\r\n /g, ""), /URL:https:\/\/silozpsicologia\.com\/panel\/sesion\/a1/);
+    assert.match(admin, /SUMMARY:Otro centro/);
+    assert.match(admin.replace(/\r\n /g, ""), /URL:https:\/\/terappia\.es\/panel\/sesion\/a1/);
 
     me = { id: "U", role: "patient", active: true, full_name: "Alberto Rivero Barrios", psychologist_id: "S" };
     const patient = await (await calendar(new Request(url))).text();
-    assert.match(patient, /SUMMARY:Sesión con tu psicóloga – Siloz Psicología/);
-    assert.doesNotMatch(patient, /Reunión|Psicolink|panel/);
+    assert.match(patient, /SUMMARY:Sesión con Marta – Terappia/);
+    assert.doesNotMatch(patient, /Reunión|Otro centro|panel/);
 
     me = { ...me, active: false };
     assert.equal((await calendar(new Request(url))).status, 404);

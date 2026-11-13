@@ -74,8 +74,8 @@ test("IP del cliente desde x-forwarded-for", () => {
 test("los textos reales se renderizan sin placeholders pendientes y generan un PDF válido", async () => {
   const docs = migrationDocumentsSinDomicilio();
   const values = placeholderValues(
-    { responsable_nombre: "Psicóloga Demo", responsable_dni: "03933796Z", email_contacto: "hola@terappia.es", iban: "ES34 2100 7823 6213 0025 8116", plataforma_videollamada: "Google Meet" },
-    { full_name: "Psicóloga Demo", dni: "03933796Z", collegiate_number: "M-40562", price_single_eur: 55, price_pack5_eur: 250, session_minutes: 50 }
+    { responsable_nombre: "Marta López Fernández", responsable_dni: "03933796Z", email_contacto: "hola@terappia.es", iban: "ES34 2100 7823 6213 0025 8116", plataforma_videollamada: "Google Meet" },
+    { full_name: "Marta López Fernández", dni: "03933796Z", collegiate_number: "M-40562", price_single_eur: 55, price_pack5_eur: 250, session_minutes: 50 }
   );
   const rendered = docs.map((d) => ({ ...d, ...renderTemplate(d.body_md, values) }));
   for (const d of rendered) assert.deepEqual(d.missing, [], `${d.doc_type} sin placeholders`);
@@ -89,8 +89,8 @@ test("los textos reales se renderizan sin placeholders pendientes y generan un P
     consentId: "00000000-0000-0000-0000-000000000001",
     signedAt: new Date("2026-11-08T10:00:00Z"),
     patient: { name: "Ana", surname: "Pérez Núñez", idNumber: "12345678Z", email: "ana@example.com", phone: "", birthdate: "1990-01-31" },
-    therapist: { full_name: "Psicóloga Demo", dni: "03933796Z", collegiate_number: "M-40562" },
-    responsable: { nombre: "Psicóloga Demo", dni: "03933796Z", email: "hola@terappia.es" },
+    therapist: { full_name: "Marta López Fernández", dni: "03933796Z", collegiate_number: "M-40562" },
+    responsable: { nombre: "Marta López Fernández", dni: "03933796Z", email: "hola@terappia.es" },
     reissue: { reissuedAt: new Date("2026-11-09T10:00:00Z"), signedVersions: [{ label: "A", version: "2.0" }] },
     documents: rendered.map((d, i) => ({ label: "ABC"[i], title: d.title, version: d.version, text: d.text, checkbox_label: d.checkbox_label })),
     signaturePng: png(60, 20, [[5, 5], [6, 6], [7, 7]]),
@@ -100,7 +100,7 @@ test("los textos reales se renderizan sin placeholders pendientes y generan un P
   });
   const loaded = await PDFDocument.load(bytes);
   assert.ok(loaded.getPageCount() >= 4, "portada + 3 bloques + evidencias");
-  assert.equal(loaded.getTitle(), "Siloz Psicología — Documentos de consentimiento");
+  assert.equal(loaded.getTitle(), "Terappia — Documentos de consentimiento");
   // El hash del archivo es estable para el mismo contenido.
   assert.equal(await sha256Hex(bytes), await sha256Hex(new Uint8Array(bytes)));
 });
@@ -121,8 +121,8 @@ test("textos sin domicilio (A 2.1, B 2.1, C 1.1): sin dirección y con todos los
   const docs = migrationDocumentsSinDomicilio();
   assert.deepEqual(docs.map((d) => `${d.doc_type} ${d.version}`), ["privacy 2.1", "rules 2.1", "withdrawal 1.1"]);
   const values = placeholderValues(
-    { responsable_nombre: "Psicóloga Demo", responsable_dni: "03933796Z", email_contacto: "hola@terappia.es", iban: "ES34", plataforma_videollamada: "Google Meet" },
-    { full_name: "Psicóloga Demo", dni: "03933796Z", collegiate_number: "M-40562", price_single_eur: 55, price_pack5_eur: 250, session_minutes: 50 }
+    { responsable_nombre: "Marta López Fernández", responsable_dni: "03933796Z", email_contacto: "hola@terappia.es", iban: "ES34", plataforma_videollamada: "Google Meet" },
+    { full_name: "Marta López Fernández", dni: "03933796Z", collegiate_number: "M-40562", price_single_eur: 55, price_pack5_eur: 250, session_minutes: 50 }
   );
   for (const d of docs) {
     assert.doesNotMatch(d.body_md, /responsable_direccion|domicilio|dirección indicada|por escrito a/i, d.doc_type);

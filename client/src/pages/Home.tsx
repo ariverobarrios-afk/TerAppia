@@ -1,545 +1,327 @@
-import { useState } from "react";
+import { type ReactNode } from "react";
+import { Link } from "wouter";
+import {
+  ArrowRight, CalendarDays, CalendarCheck, FileSignature, Receipt, Sparkles, Ticket,
+  Smartphone, ShieldCheck, MapPin, Lock, Check, Clock3,
+} from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CookieBanner from "@/components/CookieBanner";
-import ContactForm from "@/components/ContactForm";
+import LeadForm from "@/components/LeadForm";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, Video, CheckCircle2 } from "lucide-react";
-import GoogleReviews from "@/components/GoogleReviews";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+// ── Maqueta de la agenda (ilustración de la portada, datos inventados) ──────
+type Block = { day: number; top: number; height: number; label: string; kind: "cita" | "hueco" | "evento" };
+const DAYS = ["Lun 16", "Mar 17", "Mié 18", "Jue 19", "Vie 20"];
+const HOURS = ["9:00", "10:00", "11:00", "12:00", "13:00", "16:00", "17:00"];
+const BLOCKS: Block[] = [
+  { day: 0, top: 0, height: 1, label: "M. R.", kind: "cita" },
+  { day: 0, top: 2, height: 1, label: "A. G.", kind: "cita" },
+  { day: 0, top: 5, height: 1, label: "Hueco libre", kind: "hueco" },
+  { day: 1, top: 1, height: 1, label: "L. P.", kind: "cita" },
+  { day: 1, top: 3, height: 1, label: "Hueco libre", kind: "hueco" },
+  { day: 1, top: 5, height: 2, label: "Supervisión", kind: "evento" },
+  { day: 2, top: 0, height: 1, label: "C. V.", kind: "cita" },
+  { day: 2, top: 1, height: 1, label: "J. M.", kind: "cita" },
+  { day: 2, top: 4, height: 1, label: "Hueco libre", kind: "hueco" },
+  { day: 3, top: 2, height: 1, label: "Pareja · S. y D.", kind: "cita" },
+  { day: 3, top: 5, height: 1, label: "E. T.", kind: "cita" },
+  { day: 4, top: 0, height: 1, label: "Hueco libre", kind: "hueco" },
+  { day: 4, top: 1, height: 1, label: "N. B.", kind: "cita" },
+  { day: 4, top: 3, height: 1, label: "R. O.", kind: "cita" },
+];
+const ROW = 44; // px por hora
+
+function AgendaMock() {
+  const kindClass: Record<Block["kind"], string> = {
+    cita: "bg-primary text-primary-foreground",
+    hueco: "border border-dashed border-primary/50 bg-secondary text-primary",
+    evento: "bg-peach text-foreground",
+  };
+  return (
+    <div role="img" aria-label="Ejemplo de la agenda semanal de Terappia con citas, huecos libres y eventos"
+      className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_-30px_oklch(0.44_0.15_272/0.45)]">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <p className="font-serif text-sm font-semibold">Semana del 16 al 20</p>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" />Cita</span>
+          <span className="flex items-center gap-1.5"><span className="size-2 rounded-full border border-dashed border-primary" />Hueco</span>
+          <span className="hidden items-center gap-1.5 sm:flex"><span className="size-2 rounded-full bg-peach" />Evento</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-[2.75rem_repeat(5,minmax(0,1fr))]">
+        <div />
+        {DAYS.map((d) => (
+          <div key={d} className="border-l border-border px-1 py-2 text-center text-[11px] font-medium text-muted-foreground">{d}</div>
+        ))}
+        <div className="border-t border-border">
+          {HOURS.map((h) => (
+            <div key={h} style={{ height: ROW }} className="pr-1.5 pt-1 text-right text-[10px] text-muted-foreground">{h}</div>
+          ))}
+        </div>
+        {DAYS.map((d, i) => (
+          <div key={d} className="relative border-l border-t border-border" style={{ height: ROW * HOURS.length }}>
+            {HOURS.map((h, r) => r > 0 && (
+              <div key={h} className="absolute inset-x-0 border-t border-border/60" style={{ top: r * ROW }} />
+            ))}
+            {BLOCKS.filter((b) => b.day === i).map((b) => (
+              <div key={`${b.day}-${b.top}`}
+                className={`absolute inset-x-1 overflow-hidden rounded-md px-1.5 py-1 text-[10px] font-medium leading-tight ${kindClass[b.kind]}`}
+                style={{ top: b.top * ROW + 3, height: b.height * ROW - 6 }}>
+                {b.label}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Contenido ───────────────────────────────────────────────────────────────
+const FEATURES: { icon: typeof CalendarDays; title: string; text: string }[] = [
+  { icon: CalendarDays, title: "Agenda semanal", text: "Citas, eventos y días que pasas en otro centro, en una sola vista. Se sincroniza con Google Calendar, el iPhone u Outlook." },
+  { icon: CalendarCheck, title: "Reserva sobre tus huecos", text: "Tú abres los huecos y el paciente reserva desde su área. Una cita por semana y cancelación con más de 24 horas, sin que tengas que perseguir a nadie." },
+  { icon: FileSignature, title: "Consentimientos firmados", text: "El paciente firma la protección de datos y las normas del servicio dentro de la app. El PDF queda guardado y descargable para los dos." },
+  { icon: Ticket, title: "Bonos, tarifas y pagos", text: "Sesión suelta o bono, tarifa individual o de pareja y precios especiales por paciente. Sabes en todo momento qué está pagado." },
+  { icon: Receipt, title: "Facturación", text: "Facturas numeradas a partir de los pagos, listas para enviar, y descarga en Excel por periodo para tu gestoría." },
+  { icon: Sparkles, title: "Notas de sesión con IA", text: "A partir de tus notas, la IA te propone las claves de la sesión. Tú las revisas y decides cuáles compartes con el paciente." },
+];
+
+const PATIENT_POINTS = [
+  "Reserva y cancela sus citas sin escribirte",
+  "Firma sus documentos desde el móvil",
+  "Consulta sus próximas citas y su historial",
+  "Lee las claves de su proceso que tú publiques",
+];
+
+const ROADMAP: { title: string; text: string }[] = [
+  { title: "Facturas con VeriFactu", text: "Envío de las facturas a la Agencia Tributaria desde la propia app." },
+  { title: "Pago online", text: "Que el paciente pague la sesión o el bono al reservar." },
+  { title: "Recordatorios", text: "Avisos automáticos antes de cada cita para reducir ausencias." },
+  { title: "Equipos y centros", text: "Varias profesionales en una misma consulta, cada una con sus pacientes." },
+];
+
+const FAQ: { q: string; a: string }[] = [
+  { q: "¿En qué se diferencia de otros programas para psicólogos?", a: "Terappia nace dentro de una consulta de psicología online que la usa cada día. Por eso el paciente no es un añadido: reserva, firma y sigue su proceso desde su propia área, y tú dejas de hacer de secretaria." },
+  { q: "¿Mis pacientes tienen que instalar algo?", a: "No. Entran desde el navegador con su email y su contraseña. Si quieren, pueden añadirla a la pantalla de inicio del móvil y se abre como una app." },
+  { q: "¿Dónde se guardan los datos?", a: "En servidores de la Unión Europea, cifrados, y cada paciente solo puede ver su propia información. Las notas de sesión solo las ves tú." },
+  { q: "¿Qué hace exactamente la IA con mis notas?", a: "Lee solo el texto de tus notas, sin nombre ni DNI del paciente, y te propone un borrador de las claves de la sesión. No diagnostica ni decide nada: nada llega al paciente si tú no lo publicas." },
+  { q: "¿Cuánto cuesta?", a: "Todavía estamos en acceso anticipado con un grupo reducido de consultas y el precio de lanzamiento no está cerrado. Quien entre ahora lo conocerá antes que nadie y sin compromiso." },
+  { q: "¿Puedo traer mis pacientes y facturas de otro programa?", a: "Sí. En el acceso anticipado te ayudamos a pasar tus pacientes y tus facturas anteriores para que no empieces de cero." },
+];
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">{children}</p>;
+}
 
 export default function Home() {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedSessionType, setSelectedSessionType] = useState<"individual" | "familiar">();
-
-  const openContactDialog = (sessionType?: "individual" | "familiar") => {
-    setSelectedSessionType(sessionType);
-    setDialogOpen(true);
-  };
-
-  const specialties = [
-    "Ansiedad",
-    "Depresión",
-    "Dificultades de pareja",
-    "Dificultades familiares",
-    "Autoestima",
-    "Dolor crónico",
-    "Gestión emocional",
-    "Adicciones",
-    "Trauma",
-  ];
-
-  const faqs = [
-    {
-      question: "¿Cómo sé si necesito ir al psicólogo?",
-      answer:
-        "A veces, esperamos encontrarnos con un poco de malestar para tomar la iniciativa de acudir a terapia, sin embargo, a veces es importante poder detectar las pequeñas señales que el cuerpo y la cabeza nos mandan para poder cuidarnos a nosotros mismos.",
-    },
-    {
-      question: "¿En qué consiste un proceso de terapia?",
-      answer:
-        "Un proceso de terapia es un acompañamiento profesional, confidencial y personalizado, en el que una persona trabaja junto a un psicólogo para comprender, gestionar y transformar aspectos de su vida que le generan malestar o dificultades.",
-    },
-    {
-      question: "¿Cómo encuentro un psicólogo adecuado para mí?",
-      answer:
-        "Es importante saber que la formación del profesional es fundamental, para garantizar que pueda abordar tu motivo de consulta, sin embargo, no se trata solo de eso, sino de que te sientas escuchado/a, entendido/a y seguro/a con esa persona.",
-    },
-    {
-      question: "¿La terapia online es para todo el mundo?",
-      answer:
-        "De forma general, la terapia online es una opción valiosa y eficaz para las personas, sin embargo, no podemos asegurar que vayas a sentirte cómodo en este formato sin probarlo antes. Por ello, la sesión de valoración inicial está pensada para que puedas conocer el espacio terapéutico y tomar una decisión informada.",
-    },
-    {
-      question: "¿Y si ya he ido a terapia antes y no funcionó?",
-      answer:
-        "Esta es una de las dudas que más me he encontrado a lo largo de mi recorrido, y es lógico dudar desde la experiencia, o incluso desde el escepticismo inicial. Cada proceso es distinto, y cada vínculo también; si algo no funcionó en el pasado, no significa que no pueda funcionar ahora, podemos hablar de lo que necesitas, de lo que no te gustó, y crear un espacio más ajustado a ti.",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <CookieBanner />
 
-      {/* Hero Section */}
-      <section
-        id="inicio"
-        className="pt-28 pb-20 px-4"
-        style={{
-          background: "linear-gradient(135deg, oklch(0.97 0.01 75) 0%, oklch(0.92 0.015 75) 100%)",
-        }}
-      >
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center max-w-5xl mx-auto">
-            {/* Left column: text content */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-left">
-              <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-5 leading-tight">
-                Terapia psicológica online
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 font-light leading-relaxed">
-                Para trabajar ansiedad, autoestima y relaciones desde un enfoque terapéutico integrador.
-              </p>
-              <Button
-                onClick={() => openContactDialog()}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-10 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all mb-3"
-              >
-                Reserva tu sesión de valoración
-              </Button>
-              <p className="text-sm text-muted-foreground/70 mb-8">
-                Sesión inicial para comprender tu situación y valorar el mejor enfoque terapéutico.
-              </p>
-              {/* Trust indicators */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-center md:items-start gap-3 sm:gap-5">
-                <span className="flex items-center gap-2 text-sm font-medium text-foreground/70">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  Psicóloga colegiada
-                </span>
-                <span className="flex items-center gap-2 text-sm font-medium text-foreground/70">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  Sesiones online confidenciales
-                </span>
-                <span className="flex items-center gap-2 text-sm font-medium text-foreground/70">
-                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                  Enfoque terapéutico personalizado
-                </span>
-              </div>
-            </div>
-
-            {/* Right column: Silvia's photo */}
-            <div className="flex justify-center md:justify-end order-first md:order-last">
-              <div className="w-72 h-80 md:w-80 md:h-96">
-                <img
-                  src="/images/silvia-lopez.jpg"
-                  alt="Silvia López - Psicóloga General Sanitaria"
-                  className="w-full h-full object-cover object-top rounded-3xl shadow-xl"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Conócenos Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="container mx-auto">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="flex justify-center">
-                <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center">
-                  <img
-                    src="/images/simbolo-reloj-arena.png"
-                    alt="Símbolo de Siloz Psicología"
-                    className="h-24 w-auto"
-                  />
-                </div>
-              </div>
-              <div>
-                <h2 className="font-serif text-4xl font-bold mb-6 text-primary">Conócenos</h2>
-                <p className="text-lg text-foreground/80 leading-relaxed mb-8">
-                  En Siloz Psicología encontrarás un espacio de escucha sin prejuicios ni
-                  expectativas, donde trabajar tus dificultades emocionales, comprender lo que te
-                  ocurre y desarrollar recursos para afrontar tu malestar.
-                </p>
-                <div className="bg-secondary/50 p-6 rounded-3xl">
-                  <p className="text-lg font-medium mb-4">¿Listo para dar el primer paso?</p>
-                  <Button
-                    onClick={() => openContactDialog()}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
-                  >
-                  Reserva tu sesión de valoración
-                </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sobre Mí Section */}
-      <section
-        id="sobre-mi"
-        className="py-20 px-4"
-        style={{
-          background: "linear-gradient(180deg, oklch(0.92 0.015 75) 0%, oklch(0.97 0.01 75) 100%)",
-        }}
-      >
-        <div className="container mx-auto">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-center mb-4 text-primary">
-              ¿Cómo es la terapia conmigo?
-            </h2>
-            <div className="max-w-2xl mt-12">
-              <div>
-                <p className="text-lg text-foreground/80 leading-relaxed mb-6">
-                  Soy Silvia, psicóloga general sanitaria. Acompaño a personas que atraviesan momentos de ansiedad, tristeza o bloqueo emocional a comprender lo que les ocurre y encontrar nuevas formas de relacionarse con sus emociones.
-                </p>
-                <p className="text-lg text-foreground/80 leading-relaxed mb-8">
-                  Un espacio real, sin filtros ni expectativas, donde puedas bajar la guardia. No vengo a “arreglarte”, sino a acompañarte a entender lo que hoy duele y lo que pide ser escuchado.
-                </p>
-                <Button
-                  onClick={() => openContactDialog()}
-                  variant="outline"
-                  className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium px-8 py-6 rounded-full transition-all"
-                >
-                  Conoce más sobre mí
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-16 p-8 bg-background/80 backdrop-blur rounded-3xl shadow-lg">
-              <p className="text-lg text-center text-foreground/80 leading-relaxed">
-                Mi mirada terapéutica está especialmente orientada a entender más allá del síntoma:
-                quiero ayudarte a identificar qué hay detrás de eso que te incomoda, angustia o
-                bloquea, para que podamos trabajarlo desde la raíz y no solo desde la urgencia.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Especialidades Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="container mx-auto">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="font-serif text-4xl font-bold mb-12 text-primary">
-              ¿En qué puedo acompañarte?
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {specialties.map((specialty, index) => (
-                <div
-                  key={index}
-                  className="bg-card border border-border rounded-2xl p-6"
-                >
-                  <p className="text-base font-medium text-foreground">{specialty}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Cómo funciona Section */}
-      <section
-        className="py-20 px-4"
-        style={{
-          background: "linear-gradient(180deg, oklch(0.97 0.01 75) 0%, oklch(0.92 0.015 75) 100%)",
-        }}
-      >
-        <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="font-serif text-4xl font-bold text-center mb-16 text-primary">
-              Cómo funciona el proceso terapéutico
-            </h2>
-            <div className="space-y-8">
-              <Card className="border-2 border-primary/20 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl">
-                      1
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-xl font-semibold mb-2">Sesión de valoración inicial</h3>
-                      <p className="text-foreground/70">
-                        Comprendemos tu situación, tu historia personal y los aspectos que te gustaría trabajar.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-primary/20 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl">
-                      2
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-xl font-semibold mb-2">
-                        Evaluación terapéutica
-                      </h3>
-                      <p className="text-foreground/70">
-                        Exploramos patrones emocionales, relacionales y personales que están influyendo en tu malestar.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-primary/20 shadow-lg">
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl">
-                      3
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-xl font-semibold mb-2">
-                        Proceso de intervención
-                      </h3>
-                      <p className="text-foreground/70">
-                        Iniciamos el trabajo terapéutico orientado a generar cambios sostenidos en tu vida.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Preguntas Frecuentes Section */}
-      <section id="preguntas-frecuentes" className="py-20 px-4 bg-background">
-        <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="flex justify-center mb-6">
-                <div className="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center">
-                  <span className="text-4xl">❓</span>
-                </div>
-              </div>
-              <h2 className="font-serif text-4xl font-bold mb-6 text-primary">
-                Preguntas Frecuentes
-              </h2>
-              <p className="text-lg text-foreground/70 mb-8">
-                Las dudas antes de iniciar un proceso de terapia son normales, estamos buscando a
-                una persona adecuada pero tenemos miedo a no sentirnos cómodos o seguros en este
-                espacio. Aquí respondemos algunas de las preguntas más frecuentes durante la
-                búsqueda.
-              </p>
-              <div className="bg-secondary/50 p-6 rounded-3xl mb-8">
-                <p className="text-base font-medium mb-4">
-                  Si tienes más preguntas ¡no dudes en escribirnos para ponernos en contacto contigo
-                  y resolverlas juntos!
-                </p>
-                <Button
-                  onClick={() => openContactDialog()}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-8 py-4 rounded-full"
-                >
-                  Rellenar el formulario
-                </Button>
-              </div>
-            </div>
-
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem
-                  key={index}
-                  value={`item-${index}`}
-                  className="bg-card border-2 border-border rounded-2xl px-6 overflow-hidden"
-                >
-                  <AccordionTrigger className="text-left font-medium text-lg hover:no-underline py-6">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-foreground/70 pb-6 leading-relaxed">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </div>
-      </section>
-
-      {/* Tarifas Section */}
-      <section
-        id="tarifas"
-        className="py-20 px-4"
-        style={{
-          background: "linear-gradient(180deg, oklch(0.97 0.01 75) 0%, oklch(0.92 0.015 75) 100%)",
-        }}
-      >
-        <div className="container mx-auto">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="font-serif text-4xl md:text-5xl font-bold text-center mb-4 text-primary">
-              Tarifas de la Terapia Online
-            </h2>
-            <p className="text-xl text-center text-foreground/70 mb-12 italic">
-              Tu bienestar también merece un espacio en tu vida
+      {/* Portada */}
+      <section className="relative overflow-hidden pt-28 md:pt-36">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 size-[34rem] rounded-full bg-peach-soft blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-40 size-[28rem] rounded-full bg-secondary blur-3xl" />
+        <div className="container relative grid items-center gap-12 pb-20 lg:grid-cols-[1fr_1.1fr] lg:pb-28">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-peach" /> Acceso anticipado para consultas de psicología
             </p>
-
-            <div className="grid sm:grid-cols-2 gap-8 mt-8 items-stretch">
-              {/* Sesión de Valoración Inicial */}
-              <Card className="border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all flex flex-col">
-                <CardContent className="p-8 flex flex-col flex-grow">
-                  <h3 className="font-serif text-2xl font-bold text-center mb-6 text-primary min-h-[4rem] flex items-center justify-center">
-                    Sesión de valoración inicial
-                  </h3>
-                  <div className="bg-accent/20 rounded-2xl p-6 mb-6">
-                    <p className="text-4xl font-bold text-center text-foreground mb-2">
-                      25 € <span className="text-xl font-normal">— 60 minutos</span>
-                    </p>
-                  </div>
-                  <div className="space-y-4 mb-8 flex-grow">
-                    <p className="text-foreground/70 leading-relaxed">
-                      Primera sesión destinada a comprender tu situación, explorar tus dificultades y definir el enfoque terapéutico.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => openContactDialog("individual")}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 rounded-full"
-                  >
-                    Reserva tu sesión de valoración
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Sesión de Terapia Individual */}
-              <Card className="border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all flex flex-col">
-                <CardContent className="p-8 flex flex-col flex-grow">
-                  <h3 className="font-serif text-2xl font-bold text-center mb-6 text-primary min-h-[4rem] flex items-center justify-center">
-                    Sesión de terapia individual
-                  </h3>
-                  <div className="bg-accent/20 rounded-2xl p-6 mb-6">
-                    <p className="text-4xl font-bold text-center text-foreground mb-2">
-                      55 € <span className="text-xl font-normal">— 60 minutos</span>
-                    </p>
-                  </div>
-                  <div className="space-y-4 mb-8 flex-grow">
-                    <p className="text-foreground/70 leading-relaxed">
-                      Espacio terapéutico orientado a trabajar en profundidad los aspectos que están afectando a tu bienestar.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => openContactDialog("individual")}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 rounded-full"
-                  >
-                    Reserva tu sesión de terapia
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Bono 5 sesiones */}
-              <Card className="border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all flex flex-col">
-                <CardContent className="p-8 flex flex-col flex-grow">
-                  <h3 className="font-serif text-2xl font-bold text-center mb-6 text-primary min-h-[4rem] flex items-center justify-center">
-                    Bono 5 sesiones
-                  </h3>
-                  <div className="bg-accent/20 rounded-2xl p-6 mb-6">
-                    <p className="text-4xl font-bold text-center text-foreground mb-2">
-                      250 €
-                    </p>
-                  </div>
-                  <div className="space-y-4 mb-8 flex-grow">
-                    <p className="text-foreground/70 leading-relaxed">
-                      Pensado para personas que desean comprometerse con un proceso terapéutico continuado y dar seguimiento regular al trabajo terapéutico.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => openContactDialog("individual")}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 rounded-full"
-                  >
-                    Reserva tu sesión de valoración
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Terapia de pareja / familiar */}
-              <Card className="border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all flex flex-col">
-                <CardContent className="p-8 flex flex-col flex-grow">
-                  <h3 className="font-serif text-2xl font-bold text-center mb-6 text-primary min-h-[4rem] flex items-center justify-center">
-                    Terapia de pareja / familiar
-                  </h3>
-                  <div className="bg-accent/20 rounded-2xl p-6 mb-6">
-                    <p className="text-4xl font-bold text-center text-foreground mb-2">
-                      70 € <span className="text-xl font-normal">— 75 minutos</span>
-                    </p>
-                  </div>
-                  <div className="space-y-4 mb-8 flex-grow">
-                    <p className="text-foreground/70 leading-relaxed">
-                      Sesiones orientadas a trabajar dinámicas relacionales, mejorar la comunicación y abordar conflictos dentro de la relación o el sistema familiar.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => openContactDialog("familiar")}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 rounded-full"
-                  >
-                    Reserva tu sesión de valoración
-                  </Button>
-                </CardContent>
-              </Card>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Google Reviews Section */}
-      <GoogleReviews />
-
-      {/* Para quién es este espacio Section */}
-      <section
-        className="py-20 px-4"
-        style={{
-          background: "linear-gradient(180deg, oklch(0.97 0.01 75) 0%, oklch(0.92 0.015 75) 100%)",
-        }}
-      >
-        <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="font-serif text-4xl font-bold mb-8 text-primary">
-              ¿Para quién es este espacio terapéutico?
-            </h2>
-            <div className="bg-background/80 backdrop-blur rounded-3xl shadow-lg p-10">
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
-                La terapia en Siloz Psicología está dirigida a personas que desean comprender sus patrones emocionales, trabajar en profundidad su bienestar psicológico y comprometerse con un proceso terapéutico.
-              </p>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-8">
-                No se trata de ofrecer consejos rápidos o soluciones inmediatas, sino de un proceso de trabajo psicológico que requiere implicación y continuidad.
-              </p>
-              <Button
-                onClick={() => openContactDialog()}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-10 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
-              >
-                Reserva tu sesión de valoración
+            <h1 className="mt-5 font-serif text-4xl font-semibold leading-[1.05] text-foreground sm:text-5xl lg:text-6xl">
+              Tu consulta, organizada.<br />
+              <span className="text-primary">Tú, con tus pacientes.</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+              Agenda, reservas, consentimientos, bonos, facturas y notas de sesión en un solo sitio. Hecho desde dentro
+              de una consulta de psicología, no adaptado de un programa para clínicas.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button size="lg" className="rounded-full px-6" onClick={() => scrollTo("acceso-anticipado")}>
+                Pedir acceso anticipado <ArrowRight className="size-4" />
+              </Button>
+              <Button size="lg" variant="outline" className="rounded-full px-6" onClick={() => scrollTo("funciones")}>
+                Ver qué hace
               </Button>
             </div>
+            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2"><MapPin className="size-4 text-primary" />Datos en la Unión Europea</li>
+              <li className="flex items-center gap-2"><Lock className="size-4 text-primary" />Cada paciente solo ve lo suyo</li>
+            </ul>
+          </div>
+          <AgendaMock />
+        </div>
+      </section>
+
+      {/* Funciones */}
+      <section id="funciones" className="scroll-mt-20 border-t border-border bg-card py-20 md:py-28">
+        <div className="container">
+          <div className="max-w-2xl">
+            <Eyebrow>Lo que ya hace</Eyebrow>
+            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">Todo el trabajo de fuera de la sesión, en un solo sitio</h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Nada de esto es una promesa: son las funciones con las que ya trabaja una consulta cada semana.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="bg-card p-7">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
+                  <Icon className="size-5" />
+                </span>
+                <h3 className="mt-5 font-serif text-lg font-semibold">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Contacto Section */}
-      <section id="contacto" className="py-20 px-4 bg-background">
-        <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="font-serif text-4xl font-bold text-center mb-6 text-primary">
-              Solicita una sesión de valoración inicial
-            </h2>
-            <p className="text-lg text-center text-foreground/70 mb-12">
-              Este formulario está destinado a personas interesadas en iniciar un proceso terapéutico. Te responderé lo antes posible.
+      {/* Lado del paciente */}
+      <section id="pacientes" className="scroll-mt-20 py-20 md:py-28">
+        <div className="container grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <Eyebrow>Para tus pacientes</Eyebrow>
+            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">Su propia área, no un enlace de reservas</h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Cada paciente entra con su cuenta y encuentra todo lo de su proceso contigo. Tú decides qué huecos abres
+              y qué compartes; lo demás ocurre sin mensajes de ida y vuelta.
             </p>
-            <Card className="border-2 border-primary/20 shadow-xl">
-              <CardContent className="p-8">
-                <ContactForm onSuccess={() => setDialogOpen(false)} />
-              </CardContent>
-            </Card>
+            <ul className="mt-8 space-y-3">
+              {PATIENT_POINTS.map((t) => (
+                <li key={t} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="size-3" />
+                  </span>
+                  <span className="text-foreground">{t}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Maqueta del área del paciente (datos inventados) */}
+          <div role="img" aria-label="Ejemplo del área del paciente en el móvil" className="mx-auto w-full max-w-sm">
+            <div className="rounded-[2rem] border border-border bg-card p-5 shadow-[0_30px_80px_-30px_oklch(0.44_0.15_272/0.45)]">
+              <div className="flex items-center justify-between">
+                <p className="font-serif text-lg font-semibold">Mi área</p>
+                <Smartphone className="size-4 text-muted-foreground" />
+              </div>
+              <div className="mt-4 rounded-xl bg-primary p-4 text-primary-foreground">
+                <p className="text-xs opacity-80">Tu próxima cita</p>
+                <p className="mt-1 font-serif text-xl font-semibold">Martes 17, 10:00</p>
+                <p className="mt-1 text-xs opacity-80">Sesión individual · videollamada</p>
+              </div>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Huecos disponibles</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {["Lun 16:00", "Mar 12:00", "Mié 13:00"].map((h) => (
+                  <span key={h} className="rounded-lg border border-dashed border-primary/50 bg-secondary px-2 py-2 text-center text-xs font-medium text-primary">{h}</span>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-between rounded-xl border border-border px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <FileSignature className="size-4 text-primary" />
+                  <p className="text-sm">Consentimiento</p>
+                </div>
+                <span className="rounded-full bg-peach-soft px-2 py-0.5 text-xs font-medium">Pendiente de firma</span>
+              </div>
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+                <Sparkles className="size-4 text-primary" />
+                <p className="text-sm">Claves de mi proceso</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* En camino */}
+      <section id="en-camino" className="scroll-mt-20 border-y border-border bg-secondary/50 py-20 md:py-24">
+        <div className="container">
+          <div className="max-w-2xl">
+            <Eyebrow>En camino</Eyebrow>
+            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">Lo siguiente que estamos construyendo</h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Todavía no está disponible. Lo decimos claro para que sepas qué hay hoy y qué viene.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {ROADMAP.map((r) => (
+              <div key={r.title} className="rounded-2xl border border-border bg-card p-6">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-peach-soft px-2.5 py-1 text-xs font-medium">
+                  <Clock3 className="size-3" /> Próximamente
+                </span>
+                <h3 className="mt-4 font-serif text-lg font-semibold">{r.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{r.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Privacidad */}
+      <section className="py-20 md:py-24">
+        <div className="container grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+          <div>
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              <ShieldCheck className="size-6" />
+            </span>
+            <h2 className="mt-5 font-serif text-3xl font-semibold md:text-4xl">Datos de salud, tratados como tales</h2>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              { t: "En la Unión Europea", d: "La base de datos y los documentos firmados se guardan en servidores europeos." },
+              { t: "Permisos en la base de datos", d: "Cada paciente solo puede leer lo suyo, aunque alguien manipule la web." },
+              { t: "Tus notas son tuyas", d: "Las notas de sesión no las ve el paciente ni nadie más que tú." },
+            ].map((x) => (
+              <div key={x.t}>
+                <h3 className="font-serif text-base font-semibold">{x.t}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{x.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Preguntas */}
+      <section id="preguntas" className="scroll-mt-20 border-t border-border bg-card py-20 md:py-24">
+        <div className="container max-w-3xl">
+          <Eyebrow>Preguntas</Eyebrow>
+          <h2 className="mt-3 font-serif text-3xl font-semibold md:text-4xl">Lo que suelen preguntarnos</h2>
+          <Accordion type="single" collapsible className="mt-8">
+            {FAQ.map((f, i) => (
+              <AccordionItem key={f.q} value={`faq-${i}`}>
+                <AccordionTrigger className="text-left font-serif text-base font-semibold">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-base leading-relaxed text-muted-foreground">{f.a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Acceso anticipado */}
+      <section id="acceso-anticipado" className="scroll-mt-20 py-20 md:py-28">
+        <div className="container grid gap-12 lg:grid-cols-2">
+          <div>
+            <Eyebrow>Acceso anticipado</Eyebrow>
+            <h2 className="mt-3 font-serif text-3xl font-semibold md:text-5xl">Pruébalo con tu consulta antes que nadie</h2>
+            <p className="mt-5 max-w-lg text-lg text-muted-foreground">
+              Estamos abriendo Terappia a un grupo reducido de psicólogas y psicólogos. Cuéntanos cómo trabajas y te
+              avisamos cuando haya plaza.
+            </p>
+            <p className="mt-6 text-sm text-muted-foreground">
+              ¿Ya tienes cuenta?{" "}
+              <Link href="/acceso" className="font-medium text-primary underline underline-offset-4">Entra al área privada</Link>
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
+            <LeadForm />
           </div>
         </div>
       </section>
 
       <Footer />
-
-      {/* Contact Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-primary">
-              Solicita tu sesión de valoración inicial
-            </DialogTitle>
-          </DialogHeader>
-          <ContactForm
-            sessionType={selectedSessionType}
-            onSuccess={() => setDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
-

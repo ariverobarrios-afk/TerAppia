@@ -231,7 +231,7 @@ export default async function handler(req: Request): Promise<Response> {
   const adjuntos = [{ nombre: `Consentimiento-Terappia-${signedAt.toISOString().slice(0, 10)}.pdf`, contenidoBase64: bytesToBase64(pdf) }];
   const when = madridDateTime(signedAt);
   const paciente = emailSencillo({
-    titulo: "Tu copia firmada de los documentos de Siloz Psicología",
+    titulo: "Tu copia firmada de los documentos de Terappia",
     filas: [["Firmado", when], ["Documentos", "Protección de datos, normas del servicio y desistimiento"], ["ID", consentId]],
     parrafos: [
       `Hola, ${body.name}. Te adjuntamos el PDF con los documentos que acabas de firmar.`,
@@ -245,7 +245,7 @@ export default async function handler(req: Request): Promise<Response> {
     parrafos: ["Se adjunta el PDF firmado. También está en la ficha del paciente."],
   });
   const [emailPaciente] = await Promise.all([
-    enviarEmail({ para: profile.email, asunto: "Tu copia firmada de los documentos de Siloz Psicología", ...paciente, adjuntos, de: CONSENT_FROM(), responderA: s.email_contacto }),
+    enviarEmail({ para: profile.email, asunto: "Tu copia firmada de los documentos de Terappia", ...paciente, adjuntos, de: CONSENT_FROM(), responderA: s.email_contacto }),
     enviarEmail({ para: t.email, asunto: `Consentimiento firmado: ${fullName}`, ...psicologa, adjuntos, de: CONSENT_FROM(), responderA: s.email_contacto }),
   ]);
 

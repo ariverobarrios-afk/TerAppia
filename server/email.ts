@@ -3,7 +3,7 @@
 //
 // Variables de entorno (Vercel → Settings → Environment Variables):
 //   RESEND_API_KEY  (obligatoria) Clave de API de Resend.
-//   EMAIL_FROM      (opcional)    Remitente. Por defecto «Siloz Psicología
+//   EMAIL_FROM      (opcional)    Remitente. Por defecto «Terappia
 //                                 <no-reply@terappia.es>», el mismo que
 //                                 usan las invitaciones (dominio verificado en Resend).
 //
@@ -37,7 +37,7 @@ export async function enviarEmail(input: EmailInput): Promise<EmailResult> {
   const to = (Array.isArray(input.para) ? input.para : [input.para]).filter(Boolean);
   if (to.length === 0) return { ok: false, error: "no_recipient" };
   const from =
-    input.de || env("EMAIL_FROM") || "Siloz Psicología <no-reply@terappia.es>";
+    input.de || env("EMAIL_FROM") || "Terappia <no-reply@terappia.es>";
   try {
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",

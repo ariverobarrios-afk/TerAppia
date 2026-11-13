@@ -32,7 +32,7 @@ export function CalendarSync({ who }: { who: "patient" | "admin" }) {
           <p className="font-medium text-foreground">Ver {who === "admin" ? "tu agenda" : "tus citas"} en tu calendario</p>
           <p className="text-sm text-muted-foreground">
             {who === "admin"
-              ? "Citas (con las iniciales del paciente), eventos y días de Psicolink en Google Calendar, el calendario del iPhone u Outlook."
+              ? "Citas (con las iniciales del paciente), eventos y días en otro centro en Google Calendar, el calendario del iPhone u Outlook."
               : "Añade tus citas a Google Calendar, al calendario del iPhone u Outlook. Se actualizan solas."}
             {" "}Google puede tardar unas horas en mostrar los cambios.
           </p>

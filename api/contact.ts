@@ -1,7 +1,7 @@
 // Función serverless de Vercel (Edge) que recibe el formulario de contacto.
 //
 // Hace dos cosas con cada lead:
-//   1. Envía un email vía Resend (https://resend.com) al buzón de la consulta.
+//   1. Envía un email vía Resend (https://resend.com) al buzón de Terappia.
 //   2. (Opcional) Lo registra en Google Sheets a través de un webhook de
 //      Google Apps Script, para tener un historial ordenado.
 //
@@ -81,17 +81,14 @@ export default async function handler(req: Request): Promise<Response> {
 
   const toEmail = env("CONTACT_TO_EMAIL") || "a.riverobarrios@gmail.com";
   const fromEmail =
-    env("CONTACT_FROM_EMAIL") || "Siloz Psicología <onboarding@resend.dev>";
+    env("CONTACT_FROM_EMAIL") || "Terappia <onboarding@resend.dev>";
 
   const na = "No indicado";
   const filas: Array<[string, string]> = [
     ["Nombre completo", data.name || na],
     ["Teléfono", data.phone || na],
     ["Email", data.email || na],
-    ["Tipo de sesión", data.sessionType || na],
-    ["¿Qué quiere trabajar?", data.whatToWork || na],
-    ["Terapia previa", data.previousTherapy || na],
-    ["¿Busca proceso terapéutico?", data.wantsProcess || na],
+    ["Tipo de consulta", data.sessionType || na],
   ];
 
   const textoPlano =
@@ -109,7 +106,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const html = `
     <div style="font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:560px">
-      <h2 style="margin:0 0 12px">⭐ Nuevo lead desde la web</h2>
+      <h2 style="margin:0 0 12px">Nueva solicitud de acceso a Terappia</h2>
       <table style="border-collapse:collapse;font-size:14px">${htmlFilas}</table>
       <h3 style="margin:20px 0 6px">Mensaje</h3>
       <p style="white-space:pre-wrap;font-size:14px;line-height:1.5">${escapeHtml(
@@ -129,7 +126,7 @@ export default async function handler(req: Request): Promise<Response> {
         from: fromEmail,
         to: [toEmail],
         reply_to: data.email,
-        subject: `⭐ Nuevo lead web: ${data.name} — ${data.phone || data.email}`,
+        subject: `Terappia · solicitud de acceso: ${data.name} — ${data.phone || data.email}`,
         text: textoPlano,
         html,
       }),

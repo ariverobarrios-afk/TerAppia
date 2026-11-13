@@ -20,8 +20,8 @@ const booking: BookingInfo = {
   comment: "Prefiero <b>videollamada</b>",
   patient_name: "Ana Pérez",
   patient_email: "ana@example.com",
-  psychologist_name: "la psicóloga",
-  psychologist_email: "silvia@example.com",
+  psychologist_name: "Marta",
+  psychologist_email: "marta@example.com",
   cancel_limit_hours: 24,
 };
 
@@ -43,12 +43,12 @@ test("errores de la base de datos → respuesta clara", async () => {
 
 test("email a la psicóloga al reservar", () => {
   const e = emailReservaPsicologa(booking, "https://terappia.es");
-  assert.equal(e.para, "silvia@example.com");
+  assert.equal(e.para, "marta@example.com");
   assert.equal(e.asunto, "Nueva cita reservada: Ana Pérez — lunes 16/11/2026 a las 10:00");
   assert.match(e.texto, /Hora: 10:00 – 11:00/);
   assert.match(e.texto, /Duración: 60 min/);
   assert.match(e.texto, /Comentario: Prefiero <b>videollamada<\/b>/);
-  assert.match(e.texto, /https:\/\/silozpsicologia\.com\/panel#cita\/11111111/);
+  assert.match(e.texto, /https:\/\/terappia\.es\/panel#cita\/11111111/);
   assert.ok(e.html.includes("&lt;b&gt;videollamada"), "el comentario se escapa en el HTML");
   assert.equal(e.responderA, "ana@example.com");
 });
@@ -59,9 +59,9 @@ test("email de cancelación y confirmación al paciente", () => {
   const p = emailConfirmacionPaciente(booking, "https://x.test");
   assert.equal(p.para, "ana@example.com");
   assert.equal(p.asunto, `Cita confirmada: ${cuando(booking.starts_at)}`);
-  assert.match(p.texto, /Has reservado tu cita con la psicóloga y te la confirmamos/);
+  assert.match(p.texto, /Has reservado tu cita con Marta y te la confirmamos/);
   assert.match(p.texto, /hasta 24 horas antes/);
-  assert.match(p.texto, /Psicóloga: la psicóloga/);
+  assert.match(p.texto, /Psicóloga: Marta/);
   assert.doesNotMatch(p.texto, /Duración/);
 });
 

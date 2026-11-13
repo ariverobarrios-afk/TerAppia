@@ -154,4 +154,4 @@ export async function verifyTurnstile(token: string | undefined, ip: string | nu
 export const RATE_LIMIT_PER_HOUR = 5;
 
 export const CONSENT_FROM = () =>
-  env("RESEND_FROM") || env("CONSENT_EMAIL_FROM") || "Siloz Psicología <consentimientos@terappia.es>";
+  env("RESEND_FROM") || env("CONSENT_EMAIL_FROM") || "Terappia <consentimientos@terappia.es>";

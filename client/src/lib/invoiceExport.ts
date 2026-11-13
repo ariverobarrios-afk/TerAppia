@@ -13,7 +13,7 @@ const dateCell = (iso: string | null) => {
 export async function downloadInvoicesExcel(invoices: Invoice[], fileName: string) {
   const { default: ExcelJS } = await import("exceljs");
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Siloz Psicología";
+  wb.creator = "Terappia";
   const ws = wb.addWorksheet("Facturas", { views: [{ state: "frozen", ySplit: 1 }] });
 
   const money = '#,##0.00 "€"';

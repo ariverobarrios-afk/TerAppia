@@ -55,7 +55,7 @@ select pg_temp.ok((public.consent_context()->>'ready')::boolean = false, 'sin pr
 reset role;
 
 insert into public.therapists (profile_id, slug, full_name, dni, collegiate_number, email)
-values (:'silvia', 'silvia', 'Psicóloga Demo', '03933796Z', 'M-40562', 'silvia@example.com');
+values (:'silvia', 'silvia', 'Psicóloga Demo', '00000000T', 'M-00000', 'silvia@example.com');
 
 -- ── El paciente ve su contexto y su estado ──────────────────────────────────
 set role authenticated;
@@ -64,7 +64,7 @@ select pg_temp.ok((public.consent_context()->>'ready')::boolean, 'con profesiona
 select pg_temp.ok(public.consent_context()->>'status' = 'pendiente', 'paciente nuevo: pendiente');
 select pg_temp.ok(jsonb_array_length(public.consent_context()->'documents') = 3, 'recibe los tres textos');
 select pg_temp.ok(public.consent_context()#>>'{documents,0,doc_type}' = 'privacy', 'orden: protección de datos primero');
-select pg_temp.ok(public.consent_context()#>>'{therapist,collegiate_number}' = 'M-40562', 'datos de la profesional');
+select pg_temp.ok(public.consent_context()#>>'{therapist,collegiate_number}' = 'M-00000', 'datos de la profesional');
 select pg_temp.ok(public.consent_overview(:'p1')->>'status' = 'pendiente', 'overview propio');
 select pg_temp.expect_error(format('select public.consent_overview(%L)', :'p2'), 'NOT_ALLOWED');
 -- Nada de lectura directa de las tablas (RLS sin políticas).

@@ -8,7 +8,7 @@
 // porque Google lo descarga desde sus servidores.
 //   · Psicóloga: sus citas (con iniciales del paciente, nunca el nombre ni
 //     notas), sus eventos y los días de Psicolink.
-//   · Paciente: solo sus citas («Sesión con tu psicóloga – Siloz Psicología»).
+//   · Paciente: solo sus citas («Sesión con tu psicóloga – Terappia»).
 // No incluye citas canceladas. Va de 90 días atrás a un año vista.
 // Variables: SUPABASE_SERVICE_ROLE_KEY.
 import { createClient } from "@supabase/supabase-js";
@@ -79,7 +79,7 @@ export default async function handler(req: Request): Promise<Response> {
     }
     const overrides = new Map((days ?? []).map((d) => [d.day as string, d.psicolink as boolean]));
     for (const day of psicolinkDays(from.slice(0, 10), to.slice(0, 10), overrides)) {
-      events.push({ uid: `psicolink-${day}@terappia.es`, start: new Date(), end: new Date(), allDay: day, summary: "Psicolink" });
+      events.push({ uid: `psicolink-${day}@terappia.es`, start: new Date(), end: new Date(), allDay: day, summary: "Otro centro" });
     }
   } else {
     const [{ data: appts }, { data: psych }] = await Promise.all([
@@ -95,14 +95,14 @@ export default async function handler(req: Request): Promise<Response> {
         uid: `cita-${a.id}@terappia.es`,
         start: new Date(a.starts_at),
         end: end(a.starts_at, a.duration_minutes),
-        summary: `Sesión con ${psychName} – Siloz Psicología`,
+        summary: `Sesión con ${psychName} – Terappia`,
         description: `Sesión ${a.modality === "online" ? "online" : "presencial"} de ${a.duration_minutes} min.\nTus citas: ${base}/mi-area`,
         url: `${base}/mi-area`,
       });
     }
   }
 
-  const ics = buildIcs({ name: me.role === "admin" ? "Siloz Psicología – Agenda" : "Siloz Psicología", events });
+  const ics = buildIcs({ name: me.role === "admin" ? "Terappia – Agenda" : "Terappia", events });
   return new Response(req.method === "HEAD" ? null : ics, {
     status: 200,
     headers: {

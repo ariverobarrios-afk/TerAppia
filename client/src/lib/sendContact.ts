@@ -3,10 +3,8 @@ export interface ContactPayload {
   email: string;
   phone?: string;
   message: string;
+  // Tipo de consulta: «Trabajo sola», «Somos un equipo», etc.
   sessionType?: string;
-  whatToWork?: string;
-  previousTherapy?: string;
-  wantsProcess?: string;
   // Honeypot anti-spam (campo oculto). Si viene relleno, es un bot.
   website?: string;
 }

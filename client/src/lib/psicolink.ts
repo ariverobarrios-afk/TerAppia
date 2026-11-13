@@ -3,7 +3,7 @@ import { format } from "date-fns";
 // Días que la psicóloga reserva para Psicolink (el otro gabinete con el que colabora).
 // Por defecto miércoles (3) y viernes (5); cada día se puede cambiar a mano y
 // ese cambio se guarda en la tabla agenda_days.
-export const PSICOLINK_DEFAULT_WEEKDAYS = [3, 5];
+export const PSICOLINK_DEFAULT_WEEKDAYS: number[] = [];
 
 export interface AgendaDay {
   day: string; // yyyy-MM-dd

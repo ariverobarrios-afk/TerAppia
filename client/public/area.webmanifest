@@ -2,14 +2,14 @@
   "id": "/acceso",
   "name": "Terappia · Área privada",
   "short_name": "Terappia",
-  "description": "Área privada de Siloz Psicología",
+  "description": "Área privada de Terappia",
   "lang": "es",
   "start_url": "/acceso",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#F5F1E8",
-  "background_color": "#F5F1E8",
+  "theme_color": "#FBFAF8",
+  "background_color": "#FBFAF8",
   "icons": [
     { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }

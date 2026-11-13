@@ -1,16 +1,7 @@
-# robots.txt para Siloz Psicología
-
-# Permitir a todos los bots rastrear el sitio
 User-agent: *
 Allow: /
-
-# Área privada de pacientes: no indexar
 Disallow: /acceso
 Disallow: /panel
 Disallow: /mi-area
 
-# Referencia al sitemap
 Sitemap: https://terappia.es/sitemap.xml
-
-# Información adicional
-# Host: terappia.es

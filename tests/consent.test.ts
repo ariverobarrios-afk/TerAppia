@@ -15,14 +15,14 @@ import {
 } from "../shared/consent";
 
 const settings = {
-  responsable_nombre: "Psicóloga Demo",
+  responsable_nombre: "Marta López Fernández",
   responsable_dni: "03933796Z",
   email_contacto: "hola@terappia.es",
   iban: "ES34 2100 7823 6213 0025 8116",
   plataforma_videollamada: "Google Meet",
 };
 const therapist = {
-  full_name: "Psicóloga Demo",
+  full_name: "Marta López Fernández",
   dni: "03933796Z",
   collegiate_number: "M-40562",
   price_single_eur: "55.00",
@@ -64,7 +64,7 @@ test("placeholders: se sustituyen todos y se detectan los que faltan", () => {
   assert.equal(values.precio_sesion, "55");
   assert.equal(values.duracion_sesion, "50");
   const { text, missing } = renderTemplate("{{profesional_nombre}} ({{profesional_colegiada}}) cobra {{precio_sesion}} €, {{nada}}", values);
-  assert.equal(text, "Psicóloga Demo (M-40562) cobra 55 €, {{nada}}");
+  assert.equal(text, "Marta López Fernández (M-40562) cobra 55 €, {{nada}}");
   assert.deepEqual(missing, ["nada"]);
   assert.equal(formatEuros("49.5"), "49,50");
 });
@@ -83,7 +83,7 @@ test("texto canónico estable (es lo que se hashea)", () => {
 
 test("nombre completo → nombre y apellidos", () => {
   assert.deepEqual(splitFullName("Alberto Rivero Barrios"), { name: "Alberto", surname: "Rivero Barrios" });
-  assert.deepEqual(splitFullName("la psicóloga"), { name: "la psicóloga", surname: "" });
+  assert.deepEqual(splitFullName("Marta"), { name: "Marta", surname: "" });
 });
 
 test("hoy en Madrid", () => {

@@ -84,7 +84,7 @@ export function initials(fullName: string): string {
 // Días de Psicolink entre dos fechas (yyyy-MM-dd): miércoles y viernes por
 // defecto, salvo los días cambiados a mano (agenda_days). Igual que
 // client/src/lib/psicolink.ts.
-export const PSICOLINK_DEFAULT_WEEKDAYS = [3, 5];
+export const PSICOLINK_DEFAULT_WEEKDAYS: number[] = [];
 export function psicolinkDays(from: string, to: string, overrides: Map<string, boolean>): string[] {
   const out: string[] = [];
   for (let d = new Date(`${from}T12:00:00Z`); d.toISOString().slice(0, 10) <= to; d.setUTCDate(d.getUTCDate() + 1)) {

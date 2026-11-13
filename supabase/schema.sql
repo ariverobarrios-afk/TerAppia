@@ -1,4 +1,4 @@
--- Esquema del área privada de Siloz Psicología (Supabase / Postgres).
+-- Esquema del área privada de Terappia (Supabase / Postgres).
 --
 -- Cómo aplicarlo: Supabase → SQL Editor → New query → pega este archivo → Run.
 -- Es idempotente: se puede volver a ejecutar sin romper nada.
@@ -78,7 +78,7 @@ $$;
 revoke all on function public.is_admin() from public, anon;
 grant execute on function public.is_admin() to authenticated;
 
--- ¿La cuenta del usuario actual está activa? (Silvia puede desactivar el
+-- ¿La cuenta del usuario actual está activa? (la psicóloga puede desactivar el
 -- acceso de un paciente sin borrar su historial.)
 create or replace function public.is_active()
 returns boolean
@@ -217,7 +217,7 @@ create trigger profiles_protect_own_role
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Control de pagos.
---   · profiles.process_type: proceso individual o de pareja (lo asigna Silvia).
+--   · profiles.process_type: proceso individual o de pareja (lo asigna la psicóloga).
 --   · appointments.session_type / price_cents: tarifa aplicada a la cita
 --     (precio congelado al crearla) y paid_at: cuándo se cobró (null = pendiente).
 --   · bonos: bono de N sesiones; cada cita de tipo 'bono' consume una.
@@ -611,13 +611,13 @@ create trigger bonos_guard_invoiced
   before update on public.bonos
   for each row execute function public.guard_invoiced_payment();
 
--- Pagos que Silvia decide no facturar: dejan de salir en «Pendientes de
+-- Pagos que la psicóloga decide no facturar: dejan de salir en «Pendientes de
 -- facturar» (se pueden recuperar). null = pendiente de decidir.
 alter table public.appointments add column if not exists invoice_skipped_at timestamptz;
 alter table public.bonos add column if not exists invoice_skipped_at timestamptz;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Pacientes sin acceso: Silvia puede dar de alta pacientes sin email (sin
+-- Pacientes sin acceso: la psicóloga puede dar de alta pacientes sin email (sin
 -- cuenta en Auth) y gestionar su agenda igual. Si más adelante les invita, la
 -- nueva cuenta se enlaza con su ficha y conserva citas, bonos y facturas.
 --   · profiles.invited_at: cuándo se envió la invitación (null = nunca).
@@ -731,12 +731,12 @@ drop policy if exists "agenda_events: admin borra" on public.agenda_events;
 create policy "agenda_events: admin borra"
   on public.agenda_events for delete to authenticated using (public.is_admin());
 
--- Preparado para pacientes que no son propios de Silvia sino de otro centro o
+-- Preparado para pacientes que no son propios de la psicóloga sino de otro centro o
 -- empresa (p. ej. Psicolink). null = paciente propio. Aún no se usa en la web.
 alter table public.profiles add column if not exists external_center text;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Facturas anteriores a la web (importadas de la hoja de Silvia) y acceso de
+-- Facturas anteriores a la web (importadas de la hoja de la psicóloga) y acceso de
 -- los pacientes a sus facturas.
 --   · invoices.imported: no está ligada a una cita ni a un bono de la web y
 --     puede no tener método de pago.
@@ -867,15 +867,15 @@ create policy "appointment_notes: admin borra"
   on public.appointment_notes for delete to authenticated using (public.is_admin());
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- DAR ACCESO DE ADMINISTRADORA A SILVIA (ejecutar UNA vez, a mano):
+-- DAR ACCESO DE ADMINISTRADORA A LA PSICÓLOGA (ejecutar UNA vez, a mano):
 --
 --   1. Supabase → Authentication → Users → "Add user" → "Send invitation"
---      (o "Create new user") con el email de Silvia.
+--      (o "Create new user") con el email de la psicóloga.
 --   2. Después ejecuta aquí, cambiando el email:
 --
 --      update public.profiles
---         set role = 'admin', full_name = 'Silvia'
---       where email = 'EMAIL_DE_SILVIA@ejemplo.com';
+--         set role = 'admin', full_name = 'Psicóloga Demo'
+--       where email = 'EMAIL_DE_LA_PSICOLOGA@ejemplo.com';
 -- ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -900,7 +900,7 @@ create policy "appointment_notes: admin borra"
 create schema if not exists extensions;
 create extension if not exists btree_gist with schema extensions;
 
--- ── Ajustes (una sola fila; Silvia puede cambiarlos sin desplegar) ──────────
+-- ── Ajustes (una sola fila; la psicóloga puede cambiarlos sin desplegar) ──────────
 create table if not exists public.booking_settings (
   id                  integer primary key default 1 check (id = 1),
   min_advance_hours   integer not null default 24 check (min_advance_hours >= 0),
@@ -920,7 +920,7 @@ create policy "booking_settings: admin modifica"
   using (public.is_admin()) with check (public.is_admin());
 
 -- ── Psicóloga de cada paciente ──────────────────────────────────────────────
--- Hoy solo hay una (Silvia); el campo deja preparada la app para varias.
+-- Hoy solo hay una (la psicóloga); el campo deja preparada la app para varias.
 alter table public.profiles
   add column if not exists psychologist_id uuid
     references public.profiles (id) on delete set null on update cascade;
@@ -1044,7 +1044,7 @@ as $$
 $$;
 
 -- ¿Hay ya una cita (no cancelada) o un evento en esa franja de la agenda de
--- esa psicóloga? (Los eventos aún no tienen dueña: hoy todos son de Silvia.)
+-- esa psicóloga? (Los eventos aún no tienen dueña: hoy todos son de la psicóloga.)
 create or replace function public.agenda_busy(p_psych uuid, p_start timestamptz, p_end timestamptz)
 returns boolean
 language sql
@@ -1671,14 +1671,14 @@ grant execute on function public.consent_context() to authenticated;
 insert into public.consent_settings
   (id, responsable_nombre, responsable_dni, responsable_direccion, email_contacto, iban, plataforma_videollamada)
 values
-  (1, 'Silvia López Fernández', '03933796Z', '',  -- sin domicilio: ver 20261109_consentimiento_sin_domicilio.sql
-   'silozpsicologia@gmail.com', 'ES34 2100 7823 6213 0025 8116', 'Google Meet')
+  (1, 'Psicóloga Demo', '00000000T', '',  -- sin domicilio: ver 20261109_consentimiento_sin_domicilio.sql
+   'hola@terappia.es', 'ES00 0000 0000 0000 0000 0000', 'Google Meet')
 on conflict (id) do nothing;
 
 insert into public.therapists (profile_id, slug, full_name, dni, collegiate_number, email, session_minutes)
-select p.id, 'silvia', 'Silvia López Fernández', '03933796Z', 'M-40562', 'silozpsicologia@gmail.com', 50
+select p.id, 'demo', 'Psicóloga Demo', '00000000T', 'M-00000', 'hola@terappia.es', 50
   from public.profiles p
- where p.role = 'admin' and p.email = 'silozpsicologia@gmail.com'
+ where p.role = 'admin'
 on conflict (slug) do nothing;
 
 insert into public.document_versions (doc_type, version, title, checkbox_label, effective_from, body_md) values
@@ -1978,7 +1978,7 @@ update public.consent_settings set responsable_direccion = null where responsabl
 -- · profiles.ai_opt_out: el paciente se opone al uso de IA con sus notas (lo
 --   marca la psicóloga en la ficha cuando el paciente lo pide por email).
 -- · session_highlights: highlights generados por IA de cada sesión (texto de
---   Silvia como instrucciones). Borrador solo para administración (RLS); el
+--   la psicóloga como instrucciones). Borrador solo para administración (RLS); el
 --   paciente ve únicamente lo que la psicóloga publica (published_content), a
 --   través de my_session_highlights().
 -- ─────────────────────────────────────────────────────────────────────────────

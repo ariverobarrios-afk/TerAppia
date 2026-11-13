@@ -49,7 +49,7 @@ export default function Acceso() {
           <CardTitle>{mode === "login" ? "Inicia sesión" : "Recuperar contraseña"}</CardTitle>
           <CardDescription>
             {mode === "login"
-              ? "Acceso para pacientes de Siloz Psicología."
+              ? "Acceso para profesionales y pacientes."
               : "Te enviaremos un enlace para crear una nueva contraseña."}
           </CardDescription>
         </CardHeader>

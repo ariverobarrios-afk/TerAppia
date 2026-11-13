@@ -13,7 +13,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 ADMIN_URL="${TEST_PG_URL:-postgresql:///postgres}"
-DB="siloz_test_$$"
+DB="terappia_test_$$"
 DB_URL="$(echo "$ADMIN_URL" | sed -E "s#/[^/?]*(\?|$)#/$DB\1#")"
 PSQL=(psql -X -q -v ON_ERROR_STOP=1)
 

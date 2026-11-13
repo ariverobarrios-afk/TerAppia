@@ -241,7 +241,7 @@ export function WeekCalendar({
               ? "bg-sky-600 text-white"
               : "border border-dashed border-border text-muted-foreground"
           )}>
-          {isPsicolink?.(selectedDay) ? "Día de Psicolink (toca para quitar)" : "Marcar como día de Psicolink"}
+          {isPsicolink?.(selectedDay) ? "Día en otro centro (toca para quitar)" : "Marcar como día en otro centro"}
         </button>
       )}
 
@@ -273,7 +273,7 @@ export function WeekCalendar({
                       type="button"
                       onClick={() => onTogglePsicolink(d)}
                       aria-pressed={psicolink}
-                      title={psicolink ? "Día de Psicolink (clic para quitar)" : "Marcar como día de Psicolink"}
+                      title={psicolink ? "Día en otro centro (clic para quitar)" : "Marcar como día en otro centro"}
                       className={cn(
                         "mt-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors",
                         psicolink
@@ -281,7 +281,7 @@ export function WeekCalendar({
                           : "border border-dashed border-border text-muted-foreground/60 hover:border-sky-400 hover:text-sky-700"
                       )}
                     >
-                      Psicolink
+                      Otro centro
                     </button>
                   )}
                 </div>

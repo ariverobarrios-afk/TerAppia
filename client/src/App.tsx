@@ -7,12 +7,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AvisoLegal from "./pages/AvisoLegal";
-import Ansiedad from "./pages/Ansiedad";
-import Depresion from "./pages/Depresion";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Recursos from "./pages/Recursos";
-import Gracias from "./pages/Gracias";
 
 // Área privada (pacientes y terapeuta), cargada solo cuando se visita.
 const AreaRoutes = lazy(() => import("./pages/area"));
@@ -39,12 +33,6 @@ function Router() {
       <Route path={"/aviso-legal"} component={AvisoLegal} />
       {/* La política de privacidad está en el aviso legal (apartado 3). */}
       <Route path={"/politica-privacidad"}><Redirect to="/aviso-legal" /></Route>
-      <Route path={"/ansiedad"} component={Ansiedad} />
-      <Route path={"/depresion"} component={Depresion} />
-      <Route path={"/blog"} component={Blog} />
-      <Route path={"/blog/:slug"} component={BlogPost} />
-      <Route path={"/recursos"} component={Recursos} />
-      <Route path={"/gracias"} component={Gracias} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route (incluye el área privada) */}
       <Route component={Fallback} />

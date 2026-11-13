@@ -93,7 +93,7 @@ El domicilio de la responsable del tratamiento era su domicilio particular. Por 
 | Variable | Estado |
 |---|---|
 | `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` | Ya existen (las usan invitaciones, reservas y el formulario). |
-| `RESEND_FROM` | Opcional. Por defecto `Siloz Psicología <consentimientos@terappia.es>` (dominio ya verificado en Resend), con `reply-to` a `hola@terappia.es`. |
+| `RESEND_FROM` | Opcional. Por defecto `Terappia <consentimientos@terappia.es>` (dominio ya verificado en Resend), con `reply-to` a `hola@terappia.es`. |
 | `TURNSTILE_SECRET_KEY` + `VITE_TURNSTILE_SITE_KEY` | Opcionales. Si se ponen las dos, el formulario pide la verificación de Cloudflare Turnstile. Sin ellas, el límite de 5 intentos por hora sigue activo. |
 
 ## Decisiones distintas del brief

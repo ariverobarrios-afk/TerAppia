@@ -96,7 +96,7 @@ export function invoiceHtml(inv: Invoice, logoUrl?: string): string {
 <div class="toolbar"><button onclick="window.print()">Descargar / imprimir PDF</button></div>
 <div class="page">
   <div class="head">
-    ${logoUrl ? `<img class="logo" src="${esc(logoUrl)}" alt="Siloz Psicología">` : "<span></span>"}
+    ${logoUrl ? `<img class="logo" src="${esc(logoUrl)}" alt="Terappia">` : "<span></span>"}
     <div class="title">
       <h1>Factura</h1>
       <div class="meta">

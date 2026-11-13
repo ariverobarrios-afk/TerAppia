@@ -143,7 +143,7 @@ export function EventDialog({
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="ev-title">Nombre del evento</Label>
-            <Input id="ev-title" required autoFocus value={title} placeholder="Ej.: Reunión, formación, Psicolink…"
+            <Input id="ev-title" required autoFocus value={title} placeholder="Ej.: Reunión, formación, supervisión…"
               onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="flex flex-col gap-2">

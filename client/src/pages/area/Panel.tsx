@@ -128,7 +128,7 @@ function PanelTerapeuta() {
       .upsert({ day: key, psicolink: next, updated_at: new Date().toISOString() });
     if (error) {
       setPsicolinkDays(previous);
-      toast.error("No se pudo guardar el día de Psicolink.");
+      toast.error("No se pudo guardar el día.");
     }
   };
 

@@ -1,7 +1,7 @@
 {
-  "name": "Siloz Psicología",
+  "name": "Terappia",
   "short_name": "Terappia",
-  "description": "Psicología Online Integradora",
+  "description": "Gestión de consulta para psicólogos",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -14,7 +14,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#8BA888",
-  "background_color": "#F5F1E8",
+  "theme_color": "#3B3FA8",
+  "background_color": "#FBFAF8",
   "display": "standalone"
 }

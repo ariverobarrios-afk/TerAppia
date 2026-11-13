@@ -22,9 +22,9 @@ Mientras no se configure, la web pública funciona igual y `/acceso` muestra
 
 1. Entra en https://supabase.com → **Start your project** (puedes entrar con GitHub).
 2. **New project**:
-   - Name: `siloz-psicologia`
+   - Name: `terappia`
    - Database password: genera una y guárdala.
-   - **Region: Central EU (Frankfurt)** ← importante: datos de salud dentro de la UE.
+   - **Region: West EU (Ireland)** ← importante: datos de salud dentro de la UE.
 3. Espera a que termine de crearse (~2 min).
 
 ## 2. Crear las tablas y permisos
@@ -58,14 +58,14 @@ formulario):
 
 1. En Resend, verifica el dominio `terappia.es` (Domains → Add domain).
 2. Supabase → **Authentication → Emails → SMTP Settings** → Enable custom SMTP:
-   - Sender email: `citas@terappia.es` · Sender name: `Siloz Psicología`
+   - Sender email: `citas@terappia.es` · Sender name: `Terappia`
    - Host: `smtp.resend.com` · Port: `465`
    - Username: `resend` · Password: tu clave de API de Resend
 3. **Authentication → Emails → Templates**: traduce al menos estas dos:
-   - **Invite user** — Asunto: `Tu acceso al área privada de Siloz Psicología`
+   - **Invite user** — Asunto: `Tu acceso al área privada de Terappia`
      ```html
      <p>Hola,</p>
-     <p>la psicóloga te ha dado acceso al área privada de Siloz Psicología, donde podrás consultar tus citas.</p>
+     <p>la psicóloga te ha dado acceso al área privada de Terappia, donde podrás consultar tus citas.</p>
      <p><a href="{{ .ConfirmationURL }}">Crear mi contraseña</a></p>
      ```
    - **Reset password** — Asunto: `Crear una nueva contraseña`
@@ -78,13 +78,13 @@ formulario):
 
 ## 5. Conectar Vercel con Supabase
 
-La URL y la clave pública del proyecto (`lzypigesiibwmpzdkaht`) ya están en el
+La URL y la clave pública del proyecto (`llbcncpwwrzgaanwfcwi`) ya están en el
 código (`shared/supabasePublic.ts`); no son secretas. Solo falta **una**
 variable, la clave secreta, que usa el servidor para enviar invitaciones.
 
 1. Supabase → **Project Settings → API Keys** → copia la clave **secret**
    (`sb_secret_…`) o, en «Legacy API keys», la **service_role**.
-2. Vercel → proyecto `silozpsicologia` → **Settings → Environment Variables**:
+2. Vercel → proyecto `terappia` → **Settings → Environment Variables**:
    - Key: `SUPABASE_SERVICE_ROLE_KEY`
    - Value: la clave copiada
    - Marca **Sensitive** y, para probar sin tocar producción, solo **Preview**.
@@ -99,7 +99,7 @@ variable, la clave secreta, que usa el servidor para enviar invitaciones.
    ```sql
    update public.profiles
       set role = 'admin', full_name = 'la psicóloga'
-    where email = 'EMAIL_DE_SILVIA@ejemplo.com';
+    where email = 'EMAIL_DE_LA_PSICOLOGA@ejemplo.com';
    ```
 3. la psicóloga abre el email, elige contraseña y entra en `/panel`.
 
@@ -117,7 +117,7 @@ Detalle completo en `docs/reserva-citas-paciente.md`.
 2. **Vercel → Environment Variables** (Preview y, al publicar, Production):
    - `RESEND_API_KEY`: ya existe (la usa el formulario de contacto).
    - `EMAIL_FROM` (opcional): por defecto los avisos salen de
-     `Siloz Psicología <no-reply@terappia.es>`, el mismo remitente que
+     `Terappia <no-reply@terappia.es>`, el mismo remitente que
      las invitaciones (dominio ya verificado en Resend). Solo hace falta si se
      quiere otro.
    - `SUPABASE_SERVICE_ROLE_KEY`: ya existe (paso 5).

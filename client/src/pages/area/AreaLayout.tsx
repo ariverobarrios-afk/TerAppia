@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabaseConfigured, type Role } from "@/lib/supabase";
+import Logo from "@/components/Logo";
 
 // Las páginas privadas no deben aparecer en buscadores.
 export function useNoIndex() {
@@ -48,8 +49,8 @@ export function AreaLayout({ title, children }: { title: string; children: React
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-background/95">
         <div className="container flex h-16 items-center justify-between gap-4">
-          <Link href={isInstalledApp() ? homeFor(profile?.role) : "/"} className="font-serif text-xl font-semibold text-foreground hover:text-primary">
-            Siloz Psicología
+          <Link href={isInstalledApp() ? homeFor(profile?.role) : "/"} aria-label="Terappia">
+            <Logo />
           </Link>
           {profile && (
             <div className="flex items-center gap-3">
