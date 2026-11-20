@@ -16,24 +16,24 @@ import {
 
 const settings = {
   responsable_nombre: "Marta López Fernández",
-  responsable_dni: "03933796Z",
+  responsable_dni: "00000000T",
   email_contacto: "hola@terappia.es",
-  iban: "ES34 2100 7823 6213 0025 8116",
+  iban: "ES00 0000 0000 0000 0000 0000",
   plataforma_videollamada: "Google Meet",
 };
 const therapist = {
   full_name: "Marta López Fernández",
-  dni: "03933796Z",
-  collegiate_number: "M-40562",
+  dni: "00000000T",
+  collegiate_number: "M-00000",
   price_single_eur: "55.00",
   price_pack5_eur: 250,
   session_minutes: 50,
 };
 
 test("DNI y NIE con letra de control", () => {
-  assert.equal(isValidDniNie("03933796Z"), true);
-  assert.equal(isValidDniNie("03933796-z"), true);
-  assert.equal(isValidDniNie("03933796A"), false);
+  assert.equal(isValidDniNie("00000000T"), true);
+  assert.equal(isValidDniNie("00000000-t"), true);
+  assert.equal(isValidDniNie("00000000A"), false);
   assert.equal(isValidDniNie("12345678Z"), true);
   assert.equal(isValidDniNie("X1234567L"), true);
   assert.equal(isValidDniNie("Y1234567X"), true);
@@ -64,7 +64,7 @@ test("placeholders: se sustituyen todos y se detectan los que faltan", () => {
   assert.equal(values.precio_sesion, "55");
   assert.equal(values.duracion_sesion, "50");
   const { text, missing } = renderTemplate("{{profesional_nombre}} ({{profesional_colegiada}}) cobra {{precio_sesion}} €, {{nada}}", values);
-  assert.equal(text, "Marta López Fernández (M-40562) cobra 55 €, {{nada}}");
+  assert.equal(text, "Marta López Fernández (M-00000) cobra 55 €, {{nada}}");
   assert.deepEqual(missing, ["nada"]);
   assert.equal(formatEuros("49.5"), "49,50");
 });

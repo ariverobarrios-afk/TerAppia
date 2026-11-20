@@ -33,7 +33,7 @@ insert into public.profiles (id, role, full_name, email, psychologist_id, active
 
 -- Los textos y ajustes iniciales están cargados.
 select pg_temp.ok((select count(*) from public.current_document_versions()) = 3, 'tres documentos vigentes');
-select pg_temp.ok((select iban from public.consent_settings) like 'ES34%', 'ajustes del centro cargados');
+select pg_temp.ok((select iban from public.consent_settings) = 'ES00 0000 0000 0000 0000 0000', 'ajustes del centro cargados');
 -- Sin domicilio: ni en los ajustes ni en los textos vigentes.
 select pg_temp.ok((select coalesce(responsable_direccion, '') from public.consent_settings) = '', 'ajustes sin domicilio');
 select pg_temp.ok(not exists (select 1 from public.current_document_versions()

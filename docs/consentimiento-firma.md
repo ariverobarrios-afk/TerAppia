@@ -58,9 +58,9 @@ Todas las páginas llevan el pie «Documento firmado electrónicamente el … �
 Textos vigentes: A protección de datos **2.1**, B normas **2.1**, C desistimiento **1.1** (desde el 09/11/2026). Son los del brief (A 2.0, B 2.0, C 1.0, del 08/11/2026) sin el domicilio de la responsable: ver «Sin domicilio».
 
 Valores actuales:
-- Psicóloga Demo, DNI 03933796Z, colegiada M-40562.
+- Psicóloga Demo, DNI 00000000T, colegiada M-00000.
 - `hola@terappia.es`.
-- IBAN ES34 2100 7823 6213 0025 8116 (el del documento anterior).
+- IBAN ES00 0000 0000 0000 0000 0000 (de ejemplo).
 - Google Meet, sesiones de 50 minutos, 55 € la sesión y 250 € el bono de 5.
 
 ```sql
