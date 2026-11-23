@@ -105,6 +105,11 @@ variable, la clave secreta, que usa el servidor para enviar invitaciones.
 
 A partir de ahí, los pacientes los invita ella desde **Panel → Pacientes → Invitar paciente**.
 
+El enlace del email caduca. La psicóloga puede mandar uno nuevo desde la ficha
+del paciente con **Reenviar invitación** (siempre disponible): si aún no abrió
+el primero se repite la invitación y, si ya lo abrió, recibe el email de
+«Crear una nueva contraseña» (plantilla *Reset password*).
+
 Los recordatorios automáticos de cita y de pago (y cómo activarlos) están en
 `docs/recordatorios.md`.
 
