@@ -49,19 +49,19 @@ No hace falta ninguna variable de entorno nueva (usa `RESEND_API_KEY` y
 `supabase/migrations/20261123_recordatorios.sql` (también al final de
 `supabase/schema.sql`).
 
-## Estado: pendiente de activar
+## Activación
 
-Las tablas y `run_reminders()` ya están en la base de datos de Terappia, pero
-la tarea programada **no está activada**: `api/reminders.ts` solo existe en
-preview (rama `claude/eager-johnson-jr2q3n`), que está protegido por Vercel y
-la base de datos no puede llamarlo. Para ponerlo en marcha al lanzar:
+Activado el 23/11/2026: `api/reminders.ts` está en producción (`terappia.es`)
+y en Supabase corre la tarea `terappia-recordatorios`. Para que los emails
+salgan hace falta el dominio `terappia.es` verificado en Resend y
+`RESEND_API_KEY` en el entorno Production de Vercel
+(ver `AREA-PRIVADA-SETUP.md`).
 
-1. Pasar esta funcionalidad a `main` (producción, `terappia.es`).
-2. Tener el dominio `terappia.es` verificado en Resend y `RESEND_API_KEY` en
-   el entorno Production de Vercel (ver `AREA-PRIVADA-SETUP.md`).
-3. Ejecutar en Supabase → SQL Editor (las extensiones ya están instaladas):
+En una base de datos nueva, se activa con:
 
 ```sql
+create extension if not exists pg_cron;
+create extension if not exists pg_net with schema extensions;
 select cron.schedule('terappia-recordatorios', '*/15 * * * *', 'select public.run_reminders()');
 ```
 
