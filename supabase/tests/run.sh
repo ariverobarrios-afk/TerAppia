@@ -36,7 +36,7 @@ for f in ("20261106_reserva_citas_paciente.sql", "20261108_consentimiento_firma.
           "20261109_claves_proceso.sql",
           "20261109_calendario.sql", "20261110_tarifa_especial.sql",
           "20261116_highlights_un_uso.sql",
-          "20261123_recordatorios.sql"):
+          "20261123_recordatorios.sql", "20261123_cuentas_activadas.sql"):
     if open("supabase/migrations/" + f).read().strip() not in schema:
         sys.exit("schema.sql no incluye tal cual la migración " + f)
 PY
