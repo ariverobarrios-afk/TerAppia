@@ -33,6 +33,7 @@ import { AppointmentItem } from "./AppointmentItem";
 import { BonoDialog, PaymentsTab } from "./Payments";
 import { InvoicingSection, PatientDataDialog } from "./Invoicing";
 import { PatientProfile } from "./PatientProfile";
+import { LeadsTab } from "./Leads";
 import { WeekCalendar } from "./WeekCalendar";
 import { OpenAgendaDialog, SlotDialog } from "./SlotDialogs";
 import { AreaLayout, RequireRole } from "./AreaLayout";
@@ -247,6 +248,7 @@ function PanelTerapeuta() {
           <TabsTrigger value="agenda">Agenda</TabsTrigger>
           <TabsTrigger value="pacientes" onClick={() => profileId && closeProfile()}>Pacientes ({patients.filter((p) => p.active).length})</TabsTrigger>
           <TabsTrigger value="pagos">Pagos</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agenda">
@@ -509,6 +511,10 @@ function PanelTerapeuta() {
               />
             }
           />
+        </TabsContent>
+
+        <TabsContent value="leads">
+          <LeadsTab />
         </TabsContent>
       </Tabs>
 
