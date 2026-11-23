@@ -105,6 +105,9 @@ variable, la clave secreta, que usa el servidor para enviar invitaciones.
 
 A partir de ahí, los pacientes los invita ella desde **Panel → Pacientes → Invitar paciente**.
 
+Los recordatorios automáticos de cita y de pago (y cómo activarlos) están en
+`docs/recordatorios.md`.
+
 ---
 
 ## 7. Reserva de citas por el paciente
